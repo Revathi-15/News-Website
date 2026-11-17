@@ -1,40 +1,39 @@
-// Weather lookup
+// Weather Page — full-screen animated background with live weather data
 
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import clearGif  from "../../assets/clear sky.gif";
-import rainGif   from "../../assets/rain.gif";
-import rainLightGif  from "../../assets/rain-light.gif";
+import clearGif       from "../../assets/clear sky.gif";
+import rainGif        from "../../assets/rain.gif";
+import rainLightGif   from "../../assets/rain-light.gif";
 import rainThunderGif from "../../assets/rain-thunderstroms.gif";
-import sunnyGif  from "../../assets/sunny.gif";
-import windGif   from "../../assets/wind.gif";
-import './weather_box.css';
-import WeatherData from "./weather_data";
+import sunnyGif       from "../../assets/sunny.gif";
+import windGif        from "../../assets/wind.gif";
+import "./WeatherPage.css";
+import WeatherStats from "./WeatherStats";
 
-// Maps OpenWeatherMap `weather[0].main` string → internal theme key
+// Maps OpenWeatherMap `weather[0].main` → internal theme key
 const getWeatherTheme = (weatherMain) => {
   const m = (weatherMain || "").toLowerCase();
-  if (m.includes("thunder"))                       return "thunder";
-  if (m.includes("rain") || m.includes("drizzle")) return "rain";
-  if (m.includes("snow"))                          return "snow";
-  if (m.includes("clear"))                         return "clear";
+  if (m.includes("thunder"))                         return "thunder";
+  if (m.includes("rain") || m.includes("drizzle"))   return "rain";
+  if (m.includes("snow"))                            return "snow";
+  if (m.includes("clear"))                           return "clear";
   if (m.includes("cloud") || m.includes("overcast")) return "clouds";
   if (m.includes("mist") || m.includes("fog") || m.includes("haze")) return "mist";
-  return "clear";  // fallback
+  return "clear";
 };
 
-// Each theme uses a DIFFERENT gif so the change is visually obvious
 const GIF_MAP = {
-  thunder: rainThunderGif,   // rain-thunderstroms.gif  — dark stormy
-  rain:    rainGif,          // rain.gif               — steady rain
-  snow:    rainLightGif,     // rain-light.gif         — light/soft
-  clear:   clearGif,         // clear sky.gif          — bright sky
-  clouds:  sunnyGif,         // sunny.gif              — hazy but daylit
-  mist:    windGif,          // wind.gif               — windy/misty
+  thunder: rainThunderGif,
+  rain:    rainGif,
+  snow:    rainLightGif,
+  clear:   clearGif,
+  clouds:  sunnyGif,
+  mist:    windGif,
 };
 const getBgGif = (theme) => GIF_MAP[theme] || sunnyGif;
 
-const WeatherBox = () => {
+const WeatherPage = () => {
   const navigate = useNavigate();
   const inputRef = useRef();
   const [searchCity,    setSearchCity]    = useState("");
@@ -48,7 +47,7 @@ const WeatherBox = () => {
   const [weatherTheme,  setWeatherTheme]  = useState("clear");
   const [locationLabel, setLocationLabel] = useState("Detecting your location…");
   const [inputText,     setInputText]     = useState("");
-  const API_KEY = "2a77301bf0bec9d3ffb404bbd6b83ceb";
+  const API_KEY = process.env.REACT_APP_WEATHER_API_KEY || "2a77301bf0bec9d3ffb404bbd6b83ceb";
 
   // Geolocation on mount
   useEffect(() => {
@@ -110,7 +109,7 @@ const WeatherBox = () => {
   const handleSearch = () => {
     const city = inputText.trim();
     if (!city) return;
-    setCoords(null);        // drop GPS so city search takes over
+    setCoords(null);
     setSearchCity(city);
     setLocationLabel(city);
     setInputText("");
@@ -120,24 +119,24 @@ const WeatherBox = () => {
     if (e.key === "Enter") { e.preventDefault(); handleSearch(); }
   };
 
-  const bgGif = getBgGif(weatherTheme);   // changes every time weatherTheme changes
+  const bgGif = getBgGif(weatherTheme);
 
   return (
     <div className="wx-page">
-      {/* Full-screen GIF — key={bgGif} forces DOM remount on every src change */}
+      {/* Full-screen GIF — key forces remount on src change */}
       <div className="wx-bg" aria-hidden="true">
         <img src={bgGif} alt="" key={bgGif} />
         <div className="wx-bg-overlay" />
       </div>
 
-      {/* Back arrow — outside the panel, fixed top-left */}
+      {/* Back arrow */}
       <button className="wx-back-btn" onClick={() => navigate("/home")} aria-label="Back to home">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
         </svg>
       </button>
 
-      {/* Single unified glass panel — no back button inside */}
+      {/* Glass panel */}
       <div className="wx-glass-panel">
 
         {/* City name */}
@@ -181,7 +180,7 @@ const WeatherBox = () => {
               <p>Fetching weather…</p>
             </div>
           ) : !error ? (
-            <WeatherData
+            <WeatherStats
               weatherData={myData}
               weather={dataWeather}
               city={cityDetails}
@@ -195,4 +194,4 @@ const WeatherBox = () => {
   );
 };
 
-export default WeatherBox;
+export default WeatherPage;

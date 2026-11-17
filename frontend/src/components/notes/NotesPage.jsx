@@ -1,14 +1,14 @@
-// Notes Application — backend-persisted
+// Notes Page — backend-persisted
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDarkMode } from "../../context/DarkModeContext";
 import api from "../../api";
-import NoteCard from "./Note";
+import NoteCard from "./NoteCard";
 import "./notes.css";
 
 const categories = ["All", "Home", "Work", "Personal"];
 
-const AdvancedNotesApp = () => {
+const NotesPage = () => {
   const { darkMode } = useDarkMode();
   const navigate = useNavigate();
 
@@ -23,7 +23,6 @@ const AdvancedNotesApp = () => {
     setLoading(true); setError("");
     try {
       const res = await api.get("/notes");
-      // Add isEditing:false and saved:true to all fetched notes
       setNotes(res.data.map(n => ({ ...n, isEditing: false, saved: true })));
     } catch {
       setError("Failed to load notes. Please try again.");
@@ -71,7 +70,6 @@ const AdvancedNotesApp = () => {
     if (!note) return;
 
     if (!note.saved) {
-      // New note — POST to backend
       try {
         const res = await api.post("/notes", { title, description, category, completed: false });
         setNotes(prev => prev.map(n =>
@@ -83,7 +81,6 @@ const AdvancedNotesApp = () => {
         alert("Could not save note. Please try again.");
       }
     } else {
-      // Existing — PUT
       try {
         const res = await api.put(`/notes/${id}`, { title, description, category, completed: note.completed });
         setNotes(prev => prev.map(n =>
@@ -100,7 +97,6 @@ const AdvancedNotesApp = () => {
     const note = notes.find(n => n.id === id);
     if (!note) return;
     if (!note.saved) {
-      // Unsaved temp note — just remove from state
       setNotes(prev => prev.filter(n => n.id !== id));
       return;
     }
@@ -117,7 +113,6 @@ const AdvancedNotesApp = () => {
     const note = notes.find(n => n.id === id);
     if (!note || !note.saved) return;
     const newCompleted = !note.completed;
-    // Optimistic UI
     setNotes(prev => prev.map(n => n.id === id ? { ...n, completed: newCompleted } : n));
     try {
       await api.put(`/notes/${id}`, {
@@ -125,7 +120,6 @@ const AdvancedNotesApp = () => {
         category: note.category, completed: newCompleted,
       });
     } catch {
-      // Revert on failure
       setNotes(prev => prev.map(n => n.id === id ? { ...n, completed: !newCompleted } : n));
     }
   };
@@ -232,4 +226,4 @@ const AdvancedNotesApp = () => {
   );
 };
 
-export default AdvancedNotesApp;
+export default NotesPage;

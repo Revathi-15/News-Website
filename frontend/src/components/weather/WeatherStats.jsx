@@ -1,11 +1,12 @@
-const WeatherData = ({ weatherData, weather, city, windData }) => {
+// WeatherStats — displays temperature, conditions, and stats strip
+
+const WeatherStats = ({ weatherData, weather, city, windData }) => {
   const fmt = (ts) => {
     if (!ts) return "—";
     const d = new Date(ts * 1000);
     return `${d.getHours()}:${d.getMinutes().toString().padStart(2, "0")}`;
   };
 
-  // Emoji icons — clear, readable at any size, no SVG box needed
   const weatherEmoji = (main) => {
     const m = (main || "").toLowerCase();
     if (m.includes("thunder"))  return "⛈️";
@@ -34,7 +35,6 @@ const WeatherData = ({ weatherData, weather, city, windData }) => {
         <div className="wd-temp">{weatherData?.temp ? `${Math.round(weatherData.temp)}°C` : "—"}</div>
         <div className="wd-desc">{weather?.description || ""}</div>
 
-        {/* Min / Max inline under description */}
         <div className="wd-minmax">
           <span>
             <span className="wd-mm-label">Low</span>
@@ -53,7 +53,7 @@ const WeatherData = ({ weatherData, weather, city, windData }) => {
         </div>
       </div>
 
-      {/* ── Stats strip — all 5 in one horizontal row ── */}
+      {/* ── Stats strip ── */}
       <div className="wd-stats-strip">
         {stats.map((s) => (
           <div key={s.label} className="wd-stat">
@@ -68,4 +68,4 @@ const WeatherData = ({ weatherData, weather, city, windData }) => {
   );
 };
 
-export default WeatherData;
+export default WeatherStats;

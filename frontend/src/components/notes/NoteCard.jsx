@@ -1,8 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const formatTimestamp = (timestamp) => {
   if (!timestamp) return "";
-  // Parse the ISO string and display in user's LOCAL timezone
   const date = new Date(timestamp);
   return date.toLocaleString(undefined, {
     weekday: "short",
@@ -33,6 +32,13 @@ const NoteCard = ({ note, onSave, onDelete, onToggle, onEdit, darkMode }) => {
 
   const wordCount = useMemo(() => countWords(description), [description]);
   const colors    = categoryColors[category.toLowerCase()] || categoryColors.home;
+
+  // Sync local edit fields when the saved note data changes from parent
+  useEffect(() => {
+    setTitle(note.title || "");
+    setDescription(note.description || "");
+    setCategory(note.category || "Home");
+  }, [note.title, note.description, note.category]);
 
   return (
     <div

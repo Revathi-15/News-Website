@@ -9,7 +9,7 @@ import logo from "../../assets/logo16-1.png";
 import srch from "../../assets/srch.png";
 import "./HomePage.css";
 
-const NEWS_API_KEY = "71146ebefc69425aa26e16e6e9e066d1";
+const NEWS_API_KEY = process.env.REACT_APP_NEWS_API_KEY;
 const NEWS_URL     = "https://newsapi.org/v2/everything?";
 const PAGE_SIZE    = 20;
 const MAX_HISTORY  = 5;
@@ -177,9 +177,7 @@ const NewsCard = ({ article, onBookmark, bookmarkedUrls, onSummarize, summarizin
   );
 };
 
-// ── Search + dark toggle + avatar — extracted outside HomePage to avoid
-//    re-creation on every render (which also silences the React hooks warning)
-// ────────────────────────────────────────────────────────────────────
+// ── Search + dark toggle + avatar ───────────────────────────────────
 const SearchControls = ({
   isVoiceListening, toggleVoiceSearch,
   searchQuery, setSearchQuery,
@@ -472,7 +470,7 @@ const HomePage = () => {
           <div className={`nav-links${menuOpen ? " active" : ""}`}>
             <ul>
               <li><Link to="/weather"   onClick={() => setMenuOpen(false)}><i className="fas fa-cloud-sun" />Weather</Link></li>
-              <li><Link to="/addnote"   onClick={() => setMenuOpen(false)}><i className="fas fa-sticky-note" />Notes</Link></li>
+              <li><Link to="/notes"     onClick={() => setMenuOpen(false)}><i className="fas fa-sticky-note" />Notes</Link></li>
               <li><Link to="/bookmarks" onClick={() => setMenuOpen(false)}><i className="fas fa-bookmark" />Bookmarks</Link></li>
             </ul>
           </div>

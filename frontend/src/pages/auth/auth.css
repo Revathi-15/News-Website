@@ -166,14 +166,14 @@
 
 .auth-input-wrap input {
   width: 100%;
-  padding: 12px 42px 12px 38px;
+  padding: 12px 48px 12px 38px;
   background: rgba(255, 255, 255, 0.06);
   border: 1.5px solid rgba(255, 255, 255, 0.08);
   border-radius: 50px;
   color: #f0f4ff;
   font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
 
@@ -181,10 +181,25 @@
   color: rgba(255, 255, 255, 0.22);
 }
 
+/* Override browser autofill white background — use inset shadow to paint dark */
+.auth-input-wrap input:-webkit-autofill,
+.auth-input-wrap input:-webkit-autofill:hover,
+.auth-input-wrap input:-webkit-autofill:focus,
+.auth-input-wrap input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 999px #1a1f2e inset !important;
+  -webkit-text-fill-color: #f0f4ff !important;
+  caret-color: #f0f4ff;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 .auth-input-wrap input:focus {
   border-color: #7c3aed;
-  background: rgba(124, 58, 237, 0.08);
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.auth-input-wrap input:focus:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 999px #1a1f2e inset, 0 0 0 3px rgba(124, 58, 237, 0.15) !important;
 }
 
 /* Valid / invalid border states */
@@ -202,26 +217,39 @@
   right: 14px;
   font-size: 0.85rem;
   pointer-events: none;
+  z-index: 3;
 }
 
 .field-status.ok  { color: #34d399; }
 .field-status.err { color: #f87171; }
 
-/* Eye toggle button */
+/* Eye toggle button — sits just inside the right edge */
 .eye-btn {
   position: absolute;
   right: 14px;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  padding: 0;
-  font-size: 0.85rem;
+  padding: 4px;
+  font-size: 1rem;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: color 0.15s;
+  z-index: 2;
 }
 
-.eye-btn:hover { color: rgba(255, 255, 255, 0.7); }
+.eye-btn:hover { color: #a78bfa; }
+
+/* Hide browser's native password reveal button (Chrome/Edge) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none !important;
+}
 
 /* Error text below field */
 .field-error {

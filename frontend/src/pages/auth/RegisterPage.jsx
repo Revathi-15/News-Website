@@ -4,10 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import './auth.css';
 
-const isValidEmail = (v) =>
-  /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z][a-zA-Z0-9-]*\.[a-zA-Z]{2,6}$/.test(
-    v.trim()
-  );
+const ALLOWED_DOMAINS = [
+  'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com',
+  'protonmail.com', 'live.com', 'msn.com', 'me.com', 'mac.com',
+];
+
+const isValidEmail = (v) => {
+  const trimmed = v.trim().toLowerCase();
+  const parts = trimmed.split('@');
+  if (parts.length !== 2) return false;
+  const [user, domain] = parts;
+  if (user.length < 4) return false;
+  if (!/^[a-z0-9._%+-]+$/.test(user)) return false;
+  return ALLOWED_DOMAINS.includes(domain);
+};
 
 export default function RegisterPage() {
   const navigate = useNavigate();

@@ -1,15 +1,15 @@
 // Handles Routing for React Frontend
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { DarkModeProvider } from './context/DarkModeContext';
-import LandingPage        from './LandingPage';
+import LandingPage        from './pages/LandingPage';
 import LoginPage          from './pages/auth/LoginPage';
 import RegisterPage       from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import HomePage           from './components/Home/Homepage';
-import AdvancedNotesApp   from './components/Add_note/AdvancedNotesApp';
-import WeatherApp         from './components/WeatherApp/weather_box';
+import HomePage           from './pages/home/HomePage';
+import NotesPage          from './components/notes/NotesPage';
+import WeatherPage        from './components/weather/WeatherPage';
 import ProfilePage        from './pages/profile/ProfilePage';
-import BookmarksPage      from './pages/bookmarks/BookmarksPage';
+import BookmarksPage      from './components/bookmarks/BookmarksPage';
 
 function App() {
   return (
@@ -21,8 +21,8 @@ function App() {
           <Route path="/register"        element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/home"            element={<HomePage />} />
-          <Route path="/weather"         element={<WeatherApp />} />
-          <Route path="/addnote"         element={<AdvancedNotesApp />} />
+          <Route path="/weather"         element={<WeatherPage />} />
+          <Route path="/notes"           element={<NotesPage />} />
           <Route path="/profile"         element={<ProfilePage />} />
           <Route path="/bookmarks"       element={<BookmarksPage />} />
         </Routes>
