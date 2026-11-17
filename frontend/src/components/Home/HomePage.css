@@ -100,8 +100,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:999;}
 }
 @keyframes shimmerMove{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* Logo — responsive with clamp */
-.company-logo{display:flex;align-items:center;flex-shrink:0;position:relative;z-index:2;}
+/* Logo — button reset + responsive with clamp */
+.company-logo{display:flex;align-items:center;flex-shrink:0;position:relative;z-index:2;background:none;border:none;padding:0;cursor:pointer;}
 .company-logo img{
   height:clamp(32px,5vw,56px);
   width:auto;

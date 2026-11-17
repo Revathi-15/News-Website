@@ -74,14 +74,14 @@ export default function BookmarksPage() {
         )}
 
         <div className="bm-grid">
-          {bookmarks.map(bm => (
+          {bookmarks.map((bm, i) => (
             <div key={bm.id} className="bm-card">
               {bm.image && (
                 <div className="bm-card-img-wrap">
                   <img
                     src={bm.image}
                     alt={bm.title}
-                    loading="lazy"
+                    loading={i < 4 ? "eager" : "lazy"}
                     onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x200/1e293b/64748b?text=No+Image'; }}
                   />
                 </div>

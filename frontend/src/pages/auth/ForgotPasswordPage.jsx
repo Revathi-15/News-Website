@@ -1,4 +1,3 @@
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';

@@ -1,4 +1,3 @@
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +5,7 @@ import api from '../../api';
 import './auth.css';
 
 const isValidEmail = (v) =>
-  /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z][a-zA-Z0-9\-]*\.[a-zA-Z]{2,6}$/.test(
+  /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z][a-zA-Z0-9-]*\.[a-zA-Z]{2,6}$/.test(
     v.trim()
   );
 
@@ -64,8 +63,7 @@ export default function RegisterPage() {
       localStorage.setItem('firstName', res.data.firstName || '');
       localStorage.setItem('email', res.data.email || '');
       navigate('/home');
-    } catch (err) {
-      console.error('Google login error:', err.response?.data || err.message);
+    } catch {
       setServerError('Google sign-in failed. Please try again.');
     }
   };

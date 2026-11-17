@@ -1,44 +1,47 @@
-# Dependencies
+# ── Dependencies ────────────────────────────────────────────────────
 node_modules/
-frontend/node_modules/
 **/node_modules/
 
-# Build output
+# ── Build output ─────────────────────────────────────────────────────
 frontend/build/
 dist/
 
-# Python
+# ── Python ───────────────────────────────────────────────────────────
 venv/
 __pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
 *.pyd
-backend/__pycache__/
 backend/instance/flaskdb.db
 
-# Environment files — keep out of git (contain secrets)
+# ── Environment files (contain secrets) ─────────────────────────────
 .env
 backend/.env
 frontend/.env
 
-# Cache
-frontend/.cache/
-.eslintcache
-
-# Interview PDFs (local only)
-*.pdf
-
-# Logs
-*.log
-npm-debug.log*
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Editor
+# ── Agent / IDE artifacts ────────────────────────────────────────────
+.agents/
+.bytecoder/
 .vscode/
 .idea/
 
-# Package locks (optional — remove these lines if you want to commit them)
-# package-lock.json
+# ── Media files (large, local-only) ─────────────────────────────────
+*.mp4
+*.webm
+*.mov
+Demo.mp4
+
+# ── Logs & cache ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+frontend/.cache/
+.eslintcache
+
+# ── OS files ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Misc ─────────────────────────────────────────────────────────────
+*.pdf
+package-lock.json

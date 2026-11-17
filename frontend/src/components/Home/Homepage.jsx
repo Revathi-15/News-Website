@@ -11,10 +11,9 @@ import "./HomePage.css";
 
 const NEWS_API_KEY = "71146ebefc69425aa26e16e6e9e066d1";
 const NEWS_URL     = "https://newsapi.org/v2/everything?";
-const PAGE_SIZE    = 20;   // max per page on free tier
+const PAGE_SIZE    = 20;
 const MAX_HISTORY  = 5;
 
-// ── Category tabs config ────────────────────────────────────────────
 const CATEGORIES = [
   { id: "India",         label: "Top",          icon: "fas fa-fire" },
   { id: "technology",    label: "Technology",   icon: "fas fa-microchip" },
@@ -100,13 +99,13 @@ const SummaryModal = ({ summary, title, onClose }) => (
 );
 
 // ── News card ───────────────────────────────────────────────────────
-const NewsCard = ({ article, onBookmark, bookmarkedUrls, onSummarize, summarizing }) => {
+const NewsCard = ({ article, onBookmark, bookmarkedUrls, onSummarize, summarizing, idx }) => {
   const isBookmarked = bookmarkedUrls.has(article.url);
-  const pubDate = new Date(article.publishedAt);
-  const now     = new Date();
+  const pubDate  = new Date(article.publishedAt);
+  const now      = new Date();
   const diffHrs  = Math.floor((now - pubDate) / 3600000);
   const diffDays = Math.floor((now - pubDate) / 86400000);
-  const timeAgo =
+  const timeAgo  =
     diffHrs  < 1  ? "Just now"
     : diffHrs < 24 ? `${diffHrs}h ago`
     : diffDays < 7 ? `${diffDays}d ago`
@@ -123,15 +122,24 @@ const NewsCard = ({ article, onBookmark, bookmarkedUrls, onSummarize, summarizin
         <img
           src={article.urlToImage}
           alt={article.title || "News"}
-          loading="lazy"
-          onError={e => { e.target.onerror = null; e.target.src = "https://placehold.co/400x230/e0e0e0/505050?text=No+Image"; }}
+          loading={idx < 8 ? "eager" : "lazy"}
+          onError={e => { e.target.onerror = null; e.target.src = "https://placehold.co/400x200/1e293b/64748b?text=No+Image"; }}
         />
         <div className="card-read-time">{readMins} min read</div>
+        {article.source?.name && (
+          <div className="card-category-chip">{article.source.name}</div>
+        )}
       </div>
+
       <div className="card-content">
-        <h5 className="news-title" onClick={() => window.open(article.url, "_blank")} style={{ cursor: "pointer" }}>
+        <h5
+          className="news-title"
+          onClick={() => window.open(article.url, "_blank")}
+          style={{ cursor: "pointer" }}
+        >
           {article.title}
         </h5>
+
         <div className="card-meta-row">
           <span className="news-source-badge">{article.source.name}</span>
           <span className="news-time">
@@ -141,7 +149,9 @@ const NewsCard = ({ article, onBookmark, bookmarkedUrls, onSummarize, summarizin
             {timeAgo}
           </span>
         </div>
+
         <p className="news-des">{article.description}</p>
+
         <div className="card-actions-row">
           <button
             className={`card-action-btn summarize-btn${summarizing ? " loading" : ""}`}
@@ -167,6 +177,63 @@ const NewsCard = ({ article, onBookmark, bookmarkedUrls, onSummarize, summarizin
   );
 };
 
+// ── Search + dark toggle + avatar — extracted outside HomePage to avoid
+//    re-creation on every render (which also silences the React hooks warning)
+// ────────────────────────────────────────────────────────────────────
+const SearchControls = ({
+  isVoiceListening, toggleVoiceSearch,
+  searchQuery, setSearchQuery,
+  message, setMessage,
+  handleKeyDown, handleSearch,
+  searchInputRef,
+  darkMode, toggleDarkMode,
+  firstName, email, onLogout,
+}) => (
+  <>
+    <div className="search-bar">
+      <button
+        className={`news-mic-btn${isVoiceListening ? " listening" : ""}`}
+        onClick={toggleVoiceSearch}
+        aria-label={isVoiceListening ? "Stop voice search" : "Voice search"}
+        title={isVoiceListening ? "Stop listening" : "Search by voice"}
+        type="button"
+      >
+        {isVoiceListening ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        )}
+      </button>
+      <input
+        type="text" className="news-input"
+        placeholder={isVoiceListening ? "Listening…" : "Search news…"}
+        value={searchQuery}
+        onChange={e => { setSearchQuery(e.target.value); if (message) setMessage(""); }}
+        onKeyDown={handleKeyDown}
+        ref={searchInputRef}
+        aria-label="Search news"
+        autoComplete="off"
+      />
+      <button className="search-button" onClick={handleSearch} aria-label="Search">
+        <img src={srch} alt="" aria-hidden="true" />
+      </button>
+    </div>
+    <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+      <button className="toggle-button" onClick={toggleDarkMode} aria-label="Toggle dark mode">
+        <div className="icons">
+          {darkMode ? <i className="fas fa-sun" /> : <i className="fas fa-moon" />}
+        </div>
+      </button>
+      <ProfileMenu firstName={firstName} email={email} onLogout={onLogout} />
+    </div>
+  </>
+);
+
 // ── Main HomePage ───────────────────────────────────────────────────
 const HomePage = () => {
   const navigate = useNavigate();
@@ -175,11 +242,20 @@ const HomePage = () => {
   const firstName = (localStorage.getItem("firstName") || "").slice(0, 20);
   const email     = localStorage.getItem("email") || "";
 
-  // ── Voice search state ──
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const navRef = useRef(null);
+  useEffect(() => {
+    const handler = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const voiceRecognitionRef = useRef(null);
 
-  // State
   const [articles,       setArticles]       = useState([]);
   const [currentQuery,   setCurrentQuery]   = useState("India");
   const [activeCategory, setActiveCategory] = useState("India");
@@ -193,20 +269,18 @@ const HomePage = () => {
   const [hasMore,        setHasMore]        = useState(true);
   const [loadingMore,    setLoadingMore]    = useState(false);
   const [bookmarkedUrls, setBookmarkedUrls] = useState(new Set());
-  const [summaryData,    setSummaryData]    = useState(null);   // {title, text}
+  const [summaryData,    setSummaryData]    = useState(null);
   const [summarizingUrl, setSummarizingUrl] = useState(null);
 
-  const searchInputRef  = useRef(null);
-  const sentinelRef     = useRef(null);  // IntersectionObserver target
+  const searchInputRef = useRef(null);
+  const sentinelRef    = useRef(null);
 
-  // ── Load bookmarked URLs on mount ──
   useEffect(() => {
     api.get("/bookmarks")
       .then(res => setBookmarkedUrls(new Set(res.data.map(b => b.url))))
       .catch(() => {});
   }, []);
 
-  // ── Fetch news (page 1, reset) ──
   const fetchNews = useCallback(async (query, lang = "en") => {
     setMessage(""); setLoading(true); setArticles([]); setPage(1); setHasMore(true);
     try {
@@ -214,7 +288,6 @@ const HomePage = () => {
       const res = await fetch(url);
       if (!res.ok) { setMessage(`Error: ${res.statusText || "Unknown error"}`); setLoading(false); return; }
       const data = await res.json();
-      // Sort newest first, filter out articles without images
       const withImg = (data.articles || [])
         .filter(a => a.urlToImage)
         .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
@@ -228,7 +301,6 @@ const HomePage = () => {
     }
   }, []);
 
-  // ── Fetch more (append) ──
   const fetchMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
@@ -241,8 +313,7 @@ const HomePage = () => {
       const withImg = (data.articles || []).filter(a => a.urlToImage);
       setArticles(prev => {
         const existing = new Set(prev.map(a => a.url));
-        const fresh = withImg.filter(a => !existing.has(a.url));
-        return [...prev, ...fresh];
+        return [...prev, ...withImg.filter(a => !existing.has(a.url))];
       });
       setPage(nextPage);
       if (withImg.length < PAGE_SIZE) setHasMore(false);
@@ -253,7 +324,6 @@ const HomePage = () => {
     }
   }, [currentQuery, page, hasMore, loadingMore]);
 
-  // ── IntersectionObserver for infinite scroll ──
   useEffect(() => {
     if (!sentinelRef.current) return;
     const observer = new IntersectionObserver(
@@ -264,30 +334,23 @@ const HomePage = () => {
     return () => observer.disconnect();
   }, [fetchMore, hasMore, loading]);
 
-  // ── Initial load ──
   useEffect(() => { fetchNews("India"); }, [fetchNews]);
 
-  // ── Voice search setup ──
   useEffect(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
     const rec = new SR();
-    rec.lang = "en-US";
-    rec.continuous = false;
-    rec.interimResults = false;
+    rec.lang = "en-US"; rec.continuous = false; rec.interimResults = false;
     rec.onresult = (e) => {
       const transcript = e.results[0][0].transcript;
       setSearchQuery(transcript);
       setIsVoiceListening(false);
-      // auto-search with the spoken term
       setSearchHistory(prev => {
         const updated = [transcript, ...prev.filter(h => h.toLowerCase() !== transcript.toLowerCase())].slice(0, MAX_HISTORY);
         localStorage.setItem("newsSearchHistory", JSON.stringify(updated));
         return updated;
       });
-      setCurrentQuery(transcript);
-      setActiveCategory(null);
-      fetchNews(transcript);
+      setCurrentQuery(transcript); setActiveCategory(null); fetchNews(transcript);
     };
     rec.onerror = () => setIsVoiceListening(false);
     rec.onend   = () => setIsVoiceListening(false);
@@ -296,37 +359,23 @@ const HomePage = () => {
 
   const toggleVoiceSearch = useCallback(() => {
     if (!voiceRecognitionRef.current) return;
-    if (isVoiceListening) {
-      voiceRecognitionRef.current.stop();
-      setIsVoiceListening(false);
-    } else {
-      voiceRecognitionRef.current.start();
-      setIsVoiceListening(true);
-      setSearchQuery("");
-    }
+    if (isVoiceListening) { voiceRecognitionRef.current.stop(); setIsVoiceListening(false); }
+    else { voiceRecognitionRef.current.start(); setIsVoiceListening(true); setSearchQuery(""); }
   }, [isVoiceListening]);
 
-  // ── Category click ──
   const onCategoryClick = useCallback((catId) => {
-    setActiveCategory(catId);
-    setCurrentQuery(catId);
-    setSearchQuery("");
-    fetchNews(catId);
+    setActiveCategory(catId); setCurrentQuery(catId); setSearchQuery(""); fetchNews(catId);
   }, [fetchNews]);
 
-  // ── Search ──
   const handleSearch = useCallback(() => {
     const q = searchQuery.trim();
     if (!q) { setMessage("Please enter a search term."); searchInputRef.current?.focus(); return; }
-    // Save to history
     setSearchHistory(prev => {
       const updated = [q, ...prev.filter(h => h.toLowerCase() !== q.toLowerCase())].slice(0, MAX_HISTORY);
       localStorage.setItem("newsSearchHistory", JSON.stringify(updated));
       return updated;
     });
-    setCurrentQuery(q);
-    setActiveCategory(null);
-    fetchNews(q);
+    setCurrentQuery(q); setActiveCategory(null); fetchNews(q);
   }, [fetchNews, searchQuery]);
 
   const handleKeyDown = useCallback(e => { if (e.key === "Enter") handleSearch(); }, [handleSearch]);
@@ -339,11 +388,9 @@ const HomePage = () => {
     });
   }, []);
 
-  // ── Bookmark toggle ──
   const handleBookmark = useCallback(async (article) => {
     const url = article.url;
     if (bookmarkedUrls.has(url)) {
-      // Find id and remove
       try {
         const res = await api.get("/bookmarks");
         const bm = res.data.find(b => b.url === url);
@@ -355,147 +402,101 @@ const HomePage = () => {
         await api.post("/bookmarks", { url, title: article.title, image: article.urlToImage, source: article.source?.name || "" });
         setBookmarkedUrls(prev => new Set([...prev, url]));
       } catch (err) {
-        if (err.response?.status === 409) { alert("Already bookmarked."); }
+        if (err.response?.status === 409) alert("Already bookmarked.");
         else alert("Could not save bookmark.");
       }
     }
   }, [bookmarkedUrls]);
 
-  // ── Gemini Summarizer ──
   const handleSummarize = useCallback(async (article) => {
     setSummarizingUrl(article.url);
     const GEMINI_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-
     if (!GEMINI_KEY || GEMINI_KEY === "your_gemini_api_key_here" || !GEMINI_KEY.startsWith("AIza")) {
-      setSummaryData({ title: article.title, text: "Gemini API key not configured or invalid. Get a free key at aistudio.google.com/app/apikey — it must start with 'AIza'. Add it as REACT_APP_GEMINI_API_KEY in frontend/.env and restart." });
-      setSummarizingUrl(null);
-      return;
+      setSummaryData({ title: article.title, text: "Gemini API key not configured. Add REACT_APP_GEMINI_API_KEY to frontend/.env and restart." });
+      setSummarizingUrl(null); return;
     }
-
-    const content = `Summarize this news article in exactly 3 clear, concise sentences. Be factual and direct:\n\nTitle: ${article.title}\n\nDescription: ${article.description || ""}\n\nContent: ${(article.content || "").substring(0, 1000)}`;
-
-    // Try models in order — flash is most available on free tier
+    const content = `Summarize this news article in exactly 3 clear, concise sentences:\n\nTitle: ${article.title}\nDescription: ${article.description || ""}\nContent: ${(article.content || "").substring(0, 1000)}`;
     const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-pro"];
-
     for (const model of models) {
       try {
         const res = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: content }] }],
-              generationConfig: { maxOutputTokens: 300, temperature: 0.3 }
-            }),
-          }
+          { method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: content }] }], generationConfig: { maxOutputTokens: 300, temperature: 0.3 } }) }
         );
         const data = await res.json();
-        console.log(`Gemini [${model}] response:`, JSON.stringify(data?.error || data?.candidates?.[0]?.content, null, 2));
-
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          setSummaryData({ title: article.title, text: text.trim() });
-          setSummarizingUrl(null);
-          return;
-        }
-        if (data?.error?.code === 429) {
-          // Rate limited — try next model
-          continue;
-        }
-        if (data?.error) {
-          setSummaryData({ title: article.title, text: `Gemini error: ${data.error.message}` });
-          setSummarizingUrl(null);
-          return;
-        }
-      } catch (err) {
-        console.error(`Gemini [${model}] fetch error:`, err);
+        if (text) { setSummaryData({ title: article.title, text: text.trim() }); setSummarizingUrl(null); return; }
+        if (data?.error?.code === 429) continue;
+        if (data?.error) { setSummaryData({ title: article.title, text: `Gemini error: ${data.error.message}` }); setSummarizingUrl(null); return; }
+      } catch {
+        // try next model
       }
     }
-
-    setSummaryData({ title: article.title, text: "All Gemini models are currently rate-limited. Please wait 30 seconds and try again." });
+    setSummaryData({ title: article.title, text: "All Gemini models are rate-limited. Please wait 30 seconds and try again." });
     setSummarizingUrl(null);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("firstName");
     localStorage.removeItem("email");
     navigate("/");
-  };
+  }, [navigate]);
 
-  const toggleHamburger = () => {
-    document.getElementById("nav-links").classList.toggle("active");
+  const searchControlsProps = {
+    isVoiceListening, toggleVoiceSearch,
+    searchQuery, setSearchQuery,
+    message, setMessage,
+    handleKeyDown, handleSearch,
+    searchInputRef,
+    darkMode, toggleDarkMode,
+    firstName, email,
+    onLogout: handleLogout,
   };
 
   return (
     <>
-      <nav>
-        <div className="nav_top flex">
-          <a href="#" onClick={() => window.location.reload()} className="company-logo">
-            <img src={logo} alt="Logo" />
-          </a>
-          <div className="hamburger" id="hamburger" onClick={toggleHamburger}>
-            <span/><span/><span/>
-          </div>
-          <div className="nav-links" id="nav-links">
-            <ul className="flex">
-              <li><Link to="/weather">Weather</Link></li>
-              <li><Link to="/addnote">Notes</Link></li>
-              <li><Link to="/bookmarks">Bookmarks</Link></li>
+      <nav ref={navRef}>
+        <div className="nav_top">
+          <div className="nav-shimmer" />
+
+          <button
+            className="company-logo"
+            onClick={() => window.location.reload()}
+            aria-label="Reload page"
+          >
+            <img src={logo} alt="Site logo" />
+          </button>
+
+          <div className={`nav-links${menuOpen ? " active" : ""}`}>
+            <ul>
+              <li><Link to="/weather"   onClick={() => setMenuOpen(false)}><i className="fas fa-cloud-sun" />Weather</Link></li>
+              <li><Link to="/addnote"   onClick={() => setMenuOpen(false)}><i className="fas fa-sticky-note" />Notes</Link></li>
+              <li><Link to="/bookmarks" onClick={() => setMenuOpen(false)}><i className="fas fa-bookmark" />Bookmarks</Link></li>
             </ul>
           </div>
+
+          <button
+            className={`hamburger${menuOpen ? " open" : ""}`}
+            onClick={() => setMenuOpen(v => !v)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+          >
+            <span /><span /><span />
+          </button>
+
           <div className="assign">
             <LiveClock />
-            <div className="search-bar flex">
-              {/* Mic button on the LEFT */}
-              <button
-                className={`news-mic-btn news-mic-left${isVoiceListening ? " listening" : ""}`}
-                onClick={toggleVoiceSearch}
-                aria-label={isVoiceListening ? "Stop voice search" : "Voice search"}
-                title={isVoiceListening ? "Stop listening" : "Search by voice"}
-                type="button"
-              >
-                {isVoiceListening ? (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="6" y="6" width="12" height="12" rx="2"/>
-                  </svg>
-                ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                    <line x1="12" y1="19" x2="12" y2="23"/>
-                    <line x1="8" y1="23" x2="16" y2="23"/>
-                  </svg>
-                )}
-              </button>
-              <input
-                id="search-text" type="text" className="news-input"
-                placeholder={isVoiceListening ? "Listening…" : "Search news…"}
-                value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); if (message) setMessage(""); }}
-                onKeyDown={handleKeyDown}
-                ref={searchInputRef}
-                aria-label="Search news"
-                autoComplete="off"
-              />
-              <button className="search-button" onClick={handleSearch} aria-label="Search">
-                <img src={srch} alt="Search" />
-              </button>
-            </div>
-            <div className="flex" style={{ gap: "4px", alignItems: "center" }}>
-              <div className="toggle-button dark-mode-button" onClick={toggleDarkMode} aria-label="Toggle dark mode">
-                <div className="icons">
-                  {darkMode ? <i className="fas fa-sun" /> : <i className="fas fa-moon" />}
-                </div>
-              </div>
-              <ProfileMenu firstName={firstName} email={email} onLogout={handleLogout} />
-            </div>
+            <SearchControls {...searchControlsProps} />
           </div>
         </div>
       </nav>
 
-      {/* Search history chips */}
+      <div className="mobile-search-row">
+        <SearchControls {...searchControlsProps} />
+      </div>
+
       {searchHistory.length > 0 && (
         <div className="search-history-bar">
           <span className="sh-label"><i className="fas fa-history" /> Recent:</span>
@@ -510,7 +511,6 @@ const HomePage = () => {
         </div>
       )}
 
-      {/* Category tabs */}
       <div className="category-tabs-bar">
         {CATEGORIES.map(cat => (
           <button
@@ -518,18 +518,17 @@ const HomePage = () => {
             className={`cat-tab-btn${activeCategory === cat.id ? " active" : ""}`}
             onClick={() => onCategoryClick(cat.id)}
           >
-            <i className={cat.icon} />
-            {cat.label}
+            <i className={cat.icon} />{cat.label}
           </button>
         ))}
       </div>
 
       {message && <div className="page-message">{message}</div>}
 
-      <div className="cards-container" id="cards-container">
+      <div className="cards-container">
         {loading ? (
           <div className="news-loader">
-            <div className="dots"><span/><span/><span/></div>
+            <div className="dots"><span /><span /><span /></div>
             <div className="loading-text">Loading the latest stories…</div>
           </div>
         ) : articles.length > 0 ? (
@@ -541,18 +540,18 @@ const HomePage = () => {
               bookmarkedUrls={bookmarkedUrls}
               onSummarize={handleSummarize}
               summarizing={summarizingUrl === article.url}
+              idx={idx}
             />
           ))
         ) : (
-          !message && <div className="no-news">No articles found. Please try a different search.</div>
+          !message && <div className="no-news">No articles found. Try a different search.</div>
         )}
       </div>
 
-      {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="scroll-sentinel" aria-hidden="true" />
       {loadingMore && (
         <div className="load-more-spinner">
-          <div className="dots"><span/><span/><span/></div>
+          <div className="dots"><span /><span /><span /></div>
           <span>Loading more…</span>
         </div>
       )}
@@ -560,12 +559,9 @@ const HomePage = () => {
         <p className="no-more-text">You've reached the end of results.</p>
       )}
 
-      {/* AI Summary modal */}
       {summaryData && (
         <SummaryModal title={summaryData.title} summary={summaryData.text} onClose={() => setSummaryData(null)} />
       )}
-
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     </>
   );
 };
