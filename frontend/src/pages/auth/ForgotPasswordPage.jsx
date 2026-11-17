@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import './auth.css';
 
-// Step 1 → enter email
-// Step 2 → enter 6-digit OTP sent to email
-// Step 3 → set new password → redirect to login
+// 3-step password reset:
+//   Step 1 — enter email  → sends OTP
+//   Step 2 — enter OTP    → verified client-side
+//   Step 3 — new password → POST /reset-password → redirect to login
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -18,7 +19,6 @@ export default function ForgotPasswordPage() {
   const [error,       setError]       = useState('');
   const [info,        setInfo]        = useState('');
 
-  /* ── Step 1: send OTP ── */
   const handleSendCode = async (e) => {
     e.preventDefault();
     setError('');
@@ -30,18 +30,15 @@ export default function ForgotPasswordPage() {
       setStep(2);
     } catch (err) {
       if (err.response?.data?.error === 'google_account') {
-        setError(
-          'This email is linked to a Google account. Password reset is managed by Google — please visit myaccount.google.com to reset your Google password.'
-        );
+        setError('This email uses Google Sign-In. Reset your password at myaccount.google.com.');
       } else {
-        setError(err.response?.data?.error || 'Failed to send reset code. Please try again.');
+        setError(err.response?.data?.error || 'Failed to send code. Please try again.');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  /* ── Step 2: verify OTP → step 3 ── */
   const handleVerifyCode = (e) => {
     e.preventDefault();
     setError('');
@@ -49,7 +46,6 @@ export default function ForgotPasswordPage() {
     setStep(3);
   };
 
-  /* ── Step 3: reset password ── */
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
@@ -66,80 +62,49 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  const stepSubtitle =
+    step === 1 ? "Enter your email and we'll send a verification code." :
+    step === 2 ? `Enter the 6-digit code sent to ${email}.` :
+                 'Enter your new password below.';
+
   return (
     <div className="auth-page">
-      <div className="auth-card" style={{ maxWidth: 420 }}>
+      <div className="auth-card fp-card">
 
-        {/* Back link */}
+        {/* Back button */}
         <button
           type="button"
-          onClick={() => (step > 1 ? setStep(step - 1) : navigate('/login'))}
-          style={{
-            background: 'none', border: 'none', color: '#818cf8',
-            fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-            padding: 0, marginBottom: 20, display: 'flex',
-            alignItems: 'center', gap: 6,
-          }}
+          className="fp-back-btn"
+          onClick={() => step > 1 ? setStep(step - 1) : navigate('/login')}
         >
           <i className="fas fa-arrow-left" />
           {step > 1 ? 'Back' : 'Back to Sign In'}
         </button>
 
-        {/* Icon + Title */}
-        <div style={{ textAlign: 'center', marginBottom: 22 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            width: 52, height: 52, borderRadius: '50%',
-            background: 'rgba(99,102,241,0.15)', marginBottom: 14,
-          }}>
-            <i className="fas fa-info-circle" style={{ color: '#818cf8', fontSize: '1.4rem' }} />
+        {/* Header */}
+        <div className="fp-header">
+          <div className="fp-icon">
+            <i className="fas fa-lock" />
           </div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#f0f4ff', margin: 0 }}>
-            Password Reset
-          </h1>
-          <p style={{ fontSize: '0.84rem', color: 'rgba(255,255,255,0.4)', marginTop: 8, lineHeight: 1.5 }}>
-            {step === 1 && "Forgot your password? Enter your email and we'll send a verification code."}
-            {step === 2 && `Enter the 6-digit code sent to ${email}.`}
-            {step === 3 && 'Enter your new password below.'}
-          </p>
+          <h1 className="fp-title">Password Reset</h1>
+          <p className="fp-subtitle">{stepSubtitle}</p>
         </div>
 
-        {/* Progress dots */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+        {/* Step progress dots */}
+        <div className="fp-steps">
           {[1, 2, 3].map((s) => (
-            <div key={s} style={{
-              width: s === step ? 22 : 8, height: 8, borderRadius: 50,
-              background: s === step ? '#7c3aed' : s < step ? '#34d399' : 'rgba(255,255,255,0.12)',
-              transition: 'all 0.3s ease',
-            }} />
+            <div
+              key={s}
+              className={`fp-dot ${s === step ? 'fp-dot-active' : s < step ? 'fp-dot-done' : ''}`}
+            />
           ))}
         </div>
 
-        {/* Info message */}
-        {info && (
-          <div style={{
-            background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)',
-            borderRadius: 10, padding: '10px 14px', fontSize: '0.82rem',
-            color: '#34d399', marginBottom: 14,
-          }}>
-            <i className="fas fa-check-circle" style={{ marginRight: 8 }} />
-            {info}
-          </div>
-        )}
+        {/* Feedback banners */}
+        {info  && <div className="fp-banner fp-banner-info"><i className="fas fa-check-circle" /> {info}</div>}
+        {error && <div className="fp-banner fp-banner-error"><i className="fas fa-exclamation-circle" /> {error}</div>}
 
-        {/* Error message */}
-        {error && (
-          <div style={{
-            background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.25)',
-            borderRadius: 10, padding: '10px 14px', fontSize: '0.82rem',
-            color: '#f87171', marginBottom: 14,
-          }}>
-            <i className="fas fa-exclamation-circle" style={{ marginRight: 8 }} />
-            {error}
-          </div>
-        )}
-
-        {/* ── Step 1: Email ── */}
+        {/* Step 1 — Email */}
         {step === 1 && (
           <form className="auth-form" onSubmit={handleSendCode} noValidate>
             <div className="auth-input-group">
@@ -162,7 +127,7 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        {/* ── Step 2: OTP code ── */}
+        {/* Step 2 — OTP */}
         {step === 2 && (
           <form className="auth-form" onSubmit={handleVerifyCode} noValidate>
             <div className="auth-input-group">
@@ -176,15 +141,15 @@ export default function ForgotPasswordPage() {
                   maxLength={6}
                   placeholder="6-digit code"
                   value={code}
+                  className="fp-otp-input"
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                  style={{ letterSpacing: '0.25em', textAlign: 'center', paddingLeft: '38px' }}
                 />
               </div>
             </div>
             <button type="submit" className="auth-submit-btn" disabled={loading}>
               Verify Code
             </button>
-            <p className="auth-legal" style={{ cursor: 'pointer' }}>
+            <p className="auth-legal">
               Didn't receive it?{' '}
               <a href="#resend" onClick={(e) => { e.preventDefault(); setStep(1); setInfo(''); }}>
                 Resend code
@@ -193,7 +158,7 @@ export default function ForgotPasswordPage() {
           </form>
         )}
 
-        {/* ── Step 3: New password ── */}
+        {/* Step 3 — New password */}
         {step === 3 && (
           <form className="auth-form" onSubmit={handleResetPassword} noValidate>
             <div className="auth-input-group">
@@ -212,7 +177,7 @@ export default function ForgotPasswordPage() {
                   type="button"
                   className="eye-btn"
                   onClick={() => setShowPass((v) => !v)}
-                  aria-label={showPass ? 'Hide' : 'Show'}
+                  aria-label={showPass ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
                   <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} />

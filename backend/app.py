@@ -637,8 +637,7 @@ def reset_password():
 
 
 # ════════════════════════════════════════════════════════════════════
-# PROFILE ROUTE (Feature 3 — backend already existed, ensuring it
-# also returns joined_at and account_type for the profile page)
+# PROFILE ROUTES
 # ════════════════════════════════════════════════════════════════════
 
 @app.route("/profile", methods=["GET"])
@@ -674,7 +673,7 @@ def update_profile():
 
 
 # ════════════════════════════════════════════════════════════════════
-# NOTES ROUTES (Feature 1)
+# NOTES ROUTES
 # ════════════════════════════════════════════════════════════════════
 
 @app.route("/notes", methods=["GET"])
@@ -734,7 +733,7 @@ def delete_note(note_id):
 
 
 # ════════════════════════════════════════════════════════════════════
-# BOOKMARKS ROUTES (Feature 2)
+# BOOKMARKS ROUTES
 # ════════════════════════════════════════════════════════════════════
 
 @app.route("/bookmarks", methods=["GET"])

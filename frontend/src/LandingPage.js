@@ -3,10 +3,10 @@ import { Link } from "react-router-dom";
 import "./LandingPage.css";
 
 const features = [
-  { icon: "fas fa-newspaper", title: "Live News Feed", desc: "Top stories curated in real-time, always fresh." },
-  { icon: "fas fa-sticky-note", title: "Smart Notes", desc: "Categorise, search and track every thought instantly." },
-  { icon: "fas fa-cloud-sun", title: "Live Weather", desc: "Precise forecasts with beautiful animated backgrounds." },
-  { icon: "fas fa-robot", title: "AI Assistant", desc: "Talk to Revathi — your voice-powered virtual companion." },
+  { icon: "fas fa-newspaper",   title: "Live News Feed",  desc: "Top stories curated in real-time, always fresh." },
+  { icon: "fas fa-sticky-note", title: "Smart Notes",     desc: "Categorise, search and track every thought instantly." },
+  { icon: "fas fa-cloud-sun",   title: "Live Weather",    desc: "Precise forecasts with beautiful animated backgrounds." },
+  { icon: "fas fa-robot",       title: "AI Summarizer",   desc: "Summarize any news article in seconds with Gemini AI." },
 ];
 
 export default function LandingPage() {

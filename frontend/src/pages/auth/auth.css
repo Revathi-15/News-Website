@@ -375,3 +375,53 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Forgot Password page extras ── */
+.fp-card { max-width: 420px; }
+
+.fp-back-btn {
+  background: none; border: none; color: #818cf8;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  padding: 0; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.15s;
+}
+.fp-back-btn:hover { color: #a78bfa; }
+
+.fp-header { text-align: center; margin-bottom: 20px; }
+
+.fp-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(99,102,241,0.15); margin-bottom: 14px;
+  font-size: 1.4rem; color: #818cf8;
+}
+.fp-title  { font-size: 1.4rem; font-weight: 700; color: #f0f4ff; margin: 0; }
+.fp-subtitle {
+  font-size: 0.84rem; color: rgba(255,255,255,0.4);
+  margin: 8px 0 0; line-height: 1.5;
+}
+
+/* Step progress dots */
+.fp-steps {
+  display: flex; justify-content: center; gap: 8px; margin-bottom: 24px;
+}
+.fp-dot {
+  width: 8px; height: 8px; border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  transition: all 0.3s ease;
+}
+.fp-dot-active { width: 22px; background: #7c3aed; }
+.fp-dot-done   { background: #34d399; }
+
+/* Info / error banners */
+.fp-banner {
+  border-radius: 10px; padding: 10px 14px;
+  font-size: 0.82rem; margin-bottom: 14px;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.fp-banner-info  { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); color: #34d399; }
+.fp-banner-error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: #f87171; }
+
+/* OTP input — centered digits */
+.fp-otp-input { letter-spacing: 0.25em; text-align: center; }

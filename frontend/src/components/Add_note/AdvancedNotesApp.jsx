@@ -1,4 +1,4 @@
-// Notes Application — backend-persisted (Feature 1)
+// Notes Application — backend-persisted
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDarkMode } from "../../context/DarkModeContext";
