@@ -47,7 +47,7 @@ const WeatherPage = () => {
   const [weatherTheme,  setWeatherTheme]  = useState("clear");
   const [locationLabel, setLocationLabel] = useState("Detecting your location…");
   const [inputText,     setInputText]     = useState("");
-  const API_KEY = process.env.REACT_APP_WEATHER_API_KEY || "2a77301bf0bec9d3ffb404bbd6b83ceb";
+  const API_KEY = process.env.REACT_APP_WEATHER_API_KEY;
 
   // Geolocation on mount
   useEffect(() => {
